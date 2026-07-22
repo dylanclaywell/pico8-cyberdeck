@@ -1,6 +1,13 @@
 tolerance = 0.3;
 
-threaded_insert_diameter = 6;
+// Facet quality (global). $fs holds constant surface smoothness across sizes;
+// $fa caps facet count on large radii. OpenSCAD uses whichever yields more.
+$fa = 1;
+$fs = 0.4;
+
+threaded_insert_diameter = 5;
+threaded_insert_depth = 6;
+threaded_insert_vertical_spacing = 2;
 
 wall_depth = 5;
 top_and_bottom_wall_depth = 3.5;

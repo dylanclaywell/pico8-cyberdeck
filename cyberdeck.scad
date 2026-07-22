@@ -4,7 +4,7 @@ include <parameters.scad>
 use <keyboard_components.scad>
 use <battery_components.scad>
 
-debug = false;
+debug = true;
 
 module interior_cutout_translate() {
     skew(szy=tan(wedge_angle))
@@ -46,7 +46,7 @@ module body() {
             }
             interior_cutout_translate() {
                 translate([keyboard_x, keyboard_y, 0]) keyboard_cutout([keyboard_x, keyboard_y, 0], [keyboard_width, keyboard_height, 80]);
-                translate([battery_x - 3 - tolerance, battery_y - 3 - tolerance, 0]) battery_cutout();
+                translate([battery_x - 3, battery_y - 3, 0]) battery_cutout();
             }
         }
     }
@@ -54,7 +54,8 @@ module body() {
     interior_cutout_translate() {
         translate([keyboard_x, keyboard_y, 0]) keyboard_mount();
         translate([battery_x, battery_y, 0]) battery_mount();
-        translate([battery_x - 3, battery_y - 3, interior_depth + top_and_bottom_wall_depth / 2]) battery_cover();
+        translate([battery_x - 3, battery_y - 3, interior_depth]) battery_cover();
+        translate([battery_x - 20 + 2, battery_y, interior_depth - threaded_insert_depth - threaded_insert_vertical_spacing]) battery_cover_mount();
     }
 }
 
