@@ -95,6 +95,13 @@ module battery_cover() {
                            battery_cover_screw_thread_length,
                            battery_cover_screw_thread_diameter);
     }
+    
+    translate([0, 0, top_and_bottom_wall_depth / 2])
+    linear_extrude(top_and_bottom_wall_depth / 2)
+        difference() {
+            offset(delta = -battery_cover_lip) battery_cover_plate();
+            offset(delta = -4) battery_cover_plate();
+        }
 }
 
 // --- Cutout --------------------------------------------------------------
@@ -109,7 +116,7 @@ module battery_cutout() {
 
 module battery_cover_mount_plate() {
     difference() {
-        square([battery_pack_cover_width, battery_pack_cover_height]);
+        offset(delta=2) square([battery_pack_cover_width, battery_pack_cover_height]);
         offset(delta=-2) square([battery_pack_cover_width, battery_pack_cover_height]);
     }
 }
@@ -120,10 +127,20 @@ module battery_cover_mount_ears() {
             square(battery_cover_ear_radius * 2, center=true);
 }
 
+module battery_cover_mount_ear_holes() {
+    for (x = battery_cover_ear_x)
+        translate([x, battery_cover_ear_y, threaded_insert_vertical_spacing + 0.01])
+            cylinder(h = threaded_insert_depth, r = threaded_insert_diameter / 2);
+}
+
 module battery_cover_mount() {
-    linear_extrude(threaded_insert_depth + threaded_insert_vertical_spacing) {
-        battery_cover_mount_plate();
-        battery_cover_mount_ears();
+    difference() {
+        linear_extrude(threaded_insert_depth + threaded_insert_vertical_spacing) {
+            battery_cover_mount_plate();
+            battery_cover_mount_ears();
+        }
+        
+        battery_cover_mount_ear_holes();
     }
 }
 
