@@ -6,6 +6,8 @@
 $fa = 1;
 $fs = 0.4;
 
+eps = 0.01;
+
 // Fit clearance applied to mating parts.
 tolerance = 0.3;
 
@@ -79,10 +81,18 @@ screen_height = 84;
 
 // This is the depth of the screen + Pi
 // Called it _to_mount because this is the amount of space from the top of the case to the mount posts
-screen_depth_to_mount = 17;
+screen_depth_to_mount = 24.80;
 
 screen_x = 20;
-screen_y = interior_height - (screen_height) - 20;
+screen_y = interior_height - (screen_height) - 5;
+
+screen_screw_thread_diameter = 2.5;
+screen_screw_head_diameter = 4;
+screen_screw_washer_diameter = 5;
+screen_screw_thread_length = 8;
+
+// This should include the washer depth as well
+screen_screw_head_depth = 3.85;
 
 
 // ============================================================

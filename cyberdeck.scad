@@ -27,8 +27,8 @@ module cutaway() {
         children();
         
         if (debug)
-            translate([-1, 10, 0])
-                cube([300, 150, 300]);
+            translate([-1, 10, -eps])
+                cube([300, 180, 300 + eps]);
     }
 }
 
@@ -48,15 +48,24 @@ module body() {
             interior_cutout_translate() {
                 translate([keyboard_x, keyboard_y, 0]) keyboard_cutout([keyboard_x, keyboard_y, 0], [keyboard_width, keyboard_height, 80]);
                 translate([battery_x - 3, battery_y - 3, 0]) battery_cutout();
+                translate([screen_x, screen_y, 0]) screen_cutout();
+
+                // Inside interior_cutout_translate so it inherits the wedge skew
+                // and stays collinear with the standoff. Overshoots the bottom;
+                // trimmed by the outer skin.
+                translate([screen_x, screen_y, 0]) screen_mount_bottom_holes();
             }
         }
     }
     
     interior_cutout_translate() {
         translate([keyboard_x, keyboard_y, 0]) keyboard_mount();
+        
         translate([battery_x, battery_y, 0]) battery_mount();
         translate([battery_x - 3, battery_y - 3, interior_depth]) battery_cover();
         translate([battery_x - 3, battery_y - 3, interior_depth - threaded_insert_depth - threaded_insert_vertical_spacing]) battery_cover_mount();
+        
+        translate([screen_x, screen_y, 0]) screen_mount();
     }
 }
 
