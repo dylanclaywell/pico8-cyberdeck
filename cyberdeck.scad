@@ -3,6 +3,7 @@ include <parameters.scad>
 
 use <keyboard_components.scad>
 use <battery_components.scad>
+use <screen_components.scad>
 
 debug = false;
 

@@ -10,6 +10,11 @@ $fs = 0.4;
 tolerance = 0.3;
 
 // ============================================================
+// Wedge (front-to-back taper)
+// ============================================================
+wedge_angle = 2;
+
+// ============================================================
 // Threaded inserts
 // ============================================================
 threaded_insert_diameter = 5;
@@ -24,28 +29,26 @@ wall_depth = 5;
 top_and_bottom_wall_depth = 3.5;
 
 // ============================================================
-// Exterior dimensions
+// Base dimensions (independent)
+// Interior and exterior interconnect, so base values come first,
+// then the derived values below.
 // ============================================================
 exterior_width = 255;
 exterior_height = 211;
-
-exterior_front_depth = interior_depth + (top_and_bottom_wall_depth * 2);
-exterior_back_depth = (exterior_height * tan(wedge_angle)) + exterior_front_depth;
-
-// ============================================================
-// Interior dimensions
-// ============================================================
-interior_width = exterior_width - (wall_depth * 2);
-interior_height = exterior_height - (wall_depth * 2);
 interior_depth = 28;
 
+// ============================================================
+// Derived dimensions
+// ============================================================
+// Interior <- exterior width/height
+interior_width = exterior_width - (wall_depth * 2);
+interior_height = exterior_height - (wall_depth * 2);
 interior_front_depth = interior_depth;
 interior_back_depth = (exterior_height * tan(wedge_angle)) + interior_front_depth;
 
-// ============================================================
-// Wedge (front-to-back taper)
-// ============================================================
-wedge_angle = 2;
+// Exterior depth <- interior_depth
+exterior_front_depth = interior_depth + (top_and_bottom_wall_depth * 2);
+exterior_back_depth = (exterior_height * tan(wedge_angle)) + exterior_front_depth;
 
 // ============================================================
 // Keyboard
@@ -68,12 +71,29 @@ battery_y = interior_height - (battery_pack_height) - 16;
 battery_pack_cover_width = battery_pack_width + 6;
 battery_pack_cover_height = battery_pack_height + 6;
 
-
 // ============================================================
 // Screen
 // ============================================================
-screen_width = 60;
-screen_height = 60;
+screen_width = 84;
+screen_height = 84;
+
+// This is the depth of the screen + Pi
+// Called it _to_mount because this is the amount of space from the top of the case to the mount posts
+screen_depth_to_mount = 17;
 
 screen_x = 20;
 screen_y = interior_height - (screen_height) - 20;
+
+
+// ============================================================
+// Hub
+// ============================================================
+
+hub_board_height = 61.45;
+hub_board_width = 25.40;
+hub_usb_port_width = 13.25;
+hub_usb_port_depth = 6;
+hub_usb_port_length = 10;
+
+hub_usb_port_mount_height = 7.5;
+hub_usb_port_cutout_depth = 10;
