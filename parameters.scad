@@ -16,6 +16,10 @@ tolerance = 0.3;
 // ============================================================
 
 case_split_z = 20;
+case_bottom_lip_width = 2;
+
+// This is the depth that sticks out from the top of the bottom half of the case
+case_bottom_lip_depth = 2;
 
 // ============================================================
 // Wedge (front-to-back taper)
@@ -79,7 +83,7 @@ keyboard_y = 20;
 battery_pack_width = 87;
 battery_pack_height = 63.65;
 
-battery_x = interior_width - (battery_pack_width) - 15;
+battery_x = interior_width - (battery_pack_width) - 25;
 battery_y = interior_height - (battery_pack_height) - 16;
 
 battery_pack_cover_width = battery_pack_width + 6;
@@ -105,7 +109,6 @@ screen_screw_thread_length = 8;
 
 // This should include the washer depth as well
 screen_screw_head_depth = 3.85;
-
 
 // ============================================================
 // Hub

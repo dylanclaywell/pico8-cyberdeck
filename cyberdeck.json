@@ -1,0 +1,13 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": {
+            "cutaway_depth_x": "300",
+            "cutaway_depth_y": "35",
+            "render_battery_cover": "true",
+            "render_bottom": "true",
+            "render_top": "true",
+            "show_cutaway": "false"
+        }
+    }
+}
