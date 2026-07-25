@@ -24,22 +24,46 @@ chamfer_transforms = [
   [[exterior_width, 0, 0], 45],
 ];
 
+interior_chamfer_transforms = [
+  [[0, 0, 0], 45],
+  [[0, interior_height, 0], 45],
+  [[interior_width, interior_height, 0], 45],
+  [[interior_width, 0, 0], 45],
+];
+
 module interior_cutout_translate() {
   skew(szy=wedge_slope)
     translate([wall_depth, wall_depth, top_and_bottom_wall_depth])
       children();
 }
 
-module case_chamfer(position = [0, 0, 0], angle = [45, 0, 0], size = [10, 10, 10]) {
+// 2D exterior footprint: full rectangle with the 4 vertical corner
+// chamfers subtracted. Single source of truth for the case outline;
+// extruded for the exterior, mirrors case_bottom_lip_profile's shape.
+module case_footprint() {
   difference() {
-    children();
+    square([exterior_width, exterior_height]);
     for (i = chamfer_transforms) {
       pos = i[0];
       rot = i[1];
       translate(pos)
         rotate(rot)
-          cube(chamfer_size * 2, center=true);
+          square(chamfer_size * 2, center=true);
     }
+  }
+}
+
+// Exterior solid: extrude the chamfered footprint into a tall prism,
+// then shear off the top to produce the front-to-back wedge taper.
+module case_exterior() {
+  difference() {
+    linear_extrude(exterior_back_depth + 1)
+      case_footprint();
+
+    translate([0, 0, exterior_front_depth])
+      skew(szy=wedge_slope)
+        translate([-1, -1, 0])
+          cube([exterior_width + 2, exterior_height + 2, exterior_back_depth + 2]);
   }
 }
 
@@ -65,7 +89,16 @@ module case_cutouts() {
     translate([screen_x, screen_y, 0]) screen_mount_bottom_holes();
 
     // This is the interior volume of the case
-    cube([interior_width, interior_height, interior_depth]);
+    difference() {
+      cube([interior_width, interior_height, interior_depth]);
+      for (i = interior_chamfer_transforms) {
+        pos = i[0];
+        rot = i[1];
+        translate(pos)
+          rotate(rot)
+            cube(chamfer_size * 2, center=true);
+      }
+    }
   }
 }
 
@@ -83,11 +116,7 @@ module case_interior_mounts() {
 
 module case() {
   difference() {
-    hull() {
-      cube([exterior_width, 0.1, exterior_front_depth]);
-      translate([0, exterior_height, 0])
-        cube([exterior_width, 0.1, exterior_back_depth]);
-    }
+    case_exterior();
     case_cutouts();
   }
 
@@ -103,7 +132,7 @@ module case_bottom_lip_profile(tol = 0) {
           interior_height - (tol * 2),
         ]
       );
-      for (i = chamfer_transforms) {
+      for (i = interior_chamfer_transforms) {
         pos = i[0];
         rot = i[1];
         translate(pos)
@@ -141,11 +170,10 @@ module case_bottom() {
   case_bottom_lip();
 }
 
-case_chamfer()
-  cutaway() {
-    if (render_top)
-      half_of(v=wedge_normal, cp=[0, 0, case_split_z], s=1000)
-        case();
+cutaway() {
+  if (render_top)
+    half_of(v=wedge_normal, cp=[0, 0, case_split_z], s=1000)
+      case();
 
-    if (render_bottom) case_bottom();
-  }
+  if (render_bottom) case_bottom();
+}
