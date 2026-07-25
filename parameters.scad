@@ -12,9 +12,21 @@ eps = 0.01;
 tolerance = 0.3;
 
 // ============================================================
+// Case
+// ============================================================
+
+case_split_z = 20;
+
+// ============================================================
 // Wedge (front-to-back taper)
 // ============================================================
 wedge_angle = 2;
+wedge_slope = tan(wedge_angle);
+
+// inverse the vector, divide by the norm (actual length) inversed vector.
+// norm is NOT the normalization, it gets the actual length of the vector,
+// and normalizing is dividing a vector by it's length.
+wedge_normal = [0, -wedge_slope, 1] / norm([0, -wedge_slope, 1]);
 
 // ============================================================
 // Threaded inserts

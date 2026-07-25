@@ -41,14 +41,18 @@ module battery_posts() {
     for (i = battery_post_positions) {
         x = i[0];
         y = i[1];
-        translate([x, y, 0])
-            color("yellow")
-            cylinder(h=battery_mount_height, r1=threaded_insert_post_diameter / 2, r2=(threaded_insert_post_diameter - 1) / 2);
+        translate([x, y, 0]) {
+                color("yellow")
+                difference() {
+                    cylinder(h=battery_mount_height, r1=threaded_insert_post_diameter / 2, r2=(threaded_insert_post_diameter - 1) / 2);
+                    translate([0, 0, battery_mount_height - threaded_insert_depth]) cylinder(h=threaded_insert_depth + eps, r=threaded_insert_diameter / 2);
+                }
+            }
     }
 }
 
 module battery_mount(position = [0, 0, 0]) {
-    cube([battery_pack_width, battery_pack_height, battery_mount_height]);
+    //cube([battery_pack_width, battery_pack_height, battery_mount_height]);
 
     battery_posts();
 }

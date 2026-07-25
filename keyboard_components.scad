@@ -1,5 +1,7 @@
 include <parameters.scad>
 
+keyboard_mount_height = 10;
+
 // These are relative to the keyboard position
 keyboard_post_positions = [
     // top left
@@ -27,7 +29,13 @@ module keyboard_posts() {
         y = i[1];
         translate([x, y, 0])
             color("yellow")
-            cylinder(h=10, r1=threaded_insert_post_diameter / 2, r2=(threaded_insert_post_diameter - 1) / 2);
+            
+            difference() {
+                    cylinder(h=keyboard_mount_height, r1=threaded_insert_post_diameter / 2, r2=(threaded_insert_post_diameter - 1) / 2);
+                    translate([0, 0, keyboard_mount_height - threaded_insert_depth]) cylinder(h=threaded_insert_depth + eps, r=threaded_insert_diameter / 2);
+                }
+            
+            
     }
 }
 

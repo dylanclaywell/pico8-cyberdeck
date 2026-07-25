@@ -7,8 +7,11 @@ use <screen_components.scad>
 
 debug = false;
 
+render_top = true;
+render_bottom = true;
+
 module interior_cutout_translate() {
-    skew(szy=tan(wedge_angle))
+    skew(szy=wedge_slope)
         translate([wall_depth, wall_depth, top_and_bottom_wall_depth])
             children();
 }
@@ -69,6 +72,12 @@ module body() {
     }
 }
 
-body();
+if (render_top)
+    half_of(v=wedge_normal, cp=[0,0,case_split_z], s=1000)
+        body();
+
+if (render_bottom)
+    half_of(v=-wedge_normal, cp=[0,0,case_split_z], s=1000)
+        body();
 
 echo("Hello", exterior_front_depth, exterior_back_depth);
