@@ -21,6 +21,8 @@ case_bottom_lip_width = 2;
 // This is the depth that sticks out from the top of the bottom half of the case
 case_bottom_lip_depth = 2;
 
+case_screw_mount_diameter = 15;
+
 // ============================================================
 // Wedge (front-to-back taper)
 // ============================================================

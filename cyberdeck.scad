@@ -31,6 +31,13 @@ interior_chamfer_transforms = [
   [[interior_width, 0, 0], 45],
 ];
 
+screw_mount_positions = [
+  [12, 12, 0],
+  [interior_width - 12, 12, 0],
+  [12, interior_height - 12, 0],
+  [interior_width - 12, interior_height - 12, 0],
+];
+
 module interior_cutout_translate() {
   skew(szy=wedge_slope)
     translate([wall_depth, wall_depth, top_and_bottom_wall_depth])
@@ -64,6 +71,20 @@ module case_exterior() {
       skew(szy=wedge_slope)
         translate([-1, -1, 0])
           cube([exterior_width + 2, exterior_height + 2, exterior_back_depth + 2]);
+  }
+}
+
+module case_screw_mounts() {
+  for (i = screw_mount_positions) {
+    x = i[0];
+    y = i[1];
+    translate([x, y, 0])
+      difference() {
+        color("yellow")
+          cylinder(h=interior_depth, r=case_screw_mount_diameter / 2);
+        translate([0, 0, interior_depth - threaded_insert_depth - case_split_z])
+          cylinder(h=30, r=threaded_insert_diameter / 2);
+      }
   }
 }
 
@@ -111,6 +132,8 @@ module case_interior_mounts() {
     translate([battery_x - 3, battery_y - 3, interior_depth - threaded_insert_depth - threaded_insert_vertical_spacing]) battery_cover_mount();
 
     translate([screen_x, screen_y, 0]) screen_mount();
+
+    case_screw_mounts();
   }
 }
 
