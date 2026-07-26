@@ -4,6 +4,7 @@ include <parameters.scad>
 use <keyboard_components.scad>
 use <battery_components.scad>
 use <screen_components.scad>
+use <hardware.scad>
 
 show_cutaway = true;
 
@@ -32,10 +33,12 @@ interior_chamfer_transforms = [
 ];
 
 screw_mount_positions = [
-  [12, 12, 0],
-  [interior_width - 12, 12, 0],
-  [12, interior_height - 12, 0],
-  [interior_width - 12, interior_height - 12, 0],
+  [case_screw_mount_spacing, case_screw_mount_spacing, 0],
+  [interior_width - case_screw_mount_spacing, case_screw_mount_spacing, 0],
+  [case_screw_mount_spacing, interior_height - case_screw_mount_spacing, 0],
+  [interior_width - case_screw_mount_spacing, interior_height - case_screw_mount_spacing, 0],
+  [interior_width / 2, 6, 0],
+  [interior_width / 2, interior_height - 6, 0],
 ];
 
 module interior_cutout_translate() {
@@ -74,16 +77,53 @@ module case_exterior() {
   }
 }
 
-module case_screw_mounts() {
+module case_top_screw_cutouts() {
+  interior_cutout_translate() {
+    for (i = screw_mount_positions) {
+      x = i[0];
+      y = i[1];
+
+      translate([x, y, interior_depth - eps])
+        cylinder(h=top_and_bottom_wall_depth + eps * 2, r=case_screw_head_diameter / 2 + tolerance);
+    }
+  }
+}
+
+module case_top_screw_mounts() {
   for (i = screw_mount_positions) {
     x = i[0];
     y = i[1];
-    translate([x, y, 0])
+
+    mount_z = case_split_z - top_and_bottom_wall_depth + case_bottom_lip_depth + tolerance;
+
+    translate([x, y, mount_z])
       difference() {
         color("yellow")
-          cylinder(h=interior_depth, r=case_screw_mount_diameter / 2);
-        translate([0, 0, interior_depth - threaded_insert_depth - case_split_z])
-          cylinder(h=30, r=threaded_insert_diameter / 2);
+          cylinder(h=interior_depth - case_split_z + case_bottom_lip_depth, r=case_screw_mount_diameter / 2);
+        translate([0, 0, case_screw_head_depth + case_screw_spacing])
+          screw_hole(
+            case_screw_head_depth,
+            case_screw_head_diameter,
+            case_screw_thread_length,
+            case_screw_thread_diameter
+          );
+      }
+  }
+}
+
+module case_bottom_screw_mounts() {
+  for (i = screw_mount_positions) {
+    x = i[0];
+    y = i[1];
+
+    mount_depth = case_split_z - top_and_bottom_wall_depth;
+
+    translate([x, y])
+      difference() {
+        color("yellow")
+          cylinder(h=mount_depth, r=case_screw_mount_diameter / 2);
+        translate([0, 0, mount_depth - threaded_insert_depth])
+          cylinder(h=30, r=threaded_insert_diameter / 2 + tolerance);
       }
   }
 }
@@ -132,8 +172,6 @@ module case_interior_mounts() {
     translate([battery_x - 3, battery_y - 3, interior_depth - threaded_insert_depth - threaded_insert_vertical_spacing]) battery_cover_mount();
 
     translate([screen_x, screen_y, 0]) screen_mount();
-
-    case_screw_mounts();
   }
 }
 
@@ -186,17 +224,34 @@ module case_bottom_lip() {
   }
 }
 
+module case_top() {
+  half_of(v=wedge_normal, cp=[0, 0, case_split_z], s=1000)
+    case();
+
+  interior_cutout_translate() {
+    case_top_screw_mounts();
+  }
+}
+
 module case_bottom() {
   half_of(v=-wedge_normal, cp=[0, 0, case_split_z], s=1000)
     case();
 
   case_bottom_lip();
+
+  interior_cutout_translate() {
+    case_bottom_screw_mounts();
+  }
 }
 
 cutaway() {
-  if (render_top)
-    half_of(v=wedge_normal, cp=[0, 0, case_split_z], s=1000)
-      case();
+  if (render_top) {
+    difference() {
+      case_top();
+
+      case_top_screw_cutouts();
+    }
+  }
 
   if (render_bottom) case_bottom();
 }

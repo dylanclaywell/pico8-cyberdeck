@@ -22,6 +22,16 @@ case_bottom_lip_width = 2;
 case_bottom_lip_depth = 2;
 
 case_screw_mount_diameter = 15;
+case_screw_mount_width = 30;
+case_screw_mount_height = 15;
+case_screw_mount_spacing = 11;
+
+// Planning on using M3x8 screws
+case_screw_head_depth = 30;
+case_screw_head_diameter = 5.35;
+case_screw_thread_diameter = 3;
+case_screw_thread_length = 8;
+case_screw_spacing = 4;
 
 // ============================================================
 // Wedge (front-to-back taper)

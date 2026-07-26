@@ -8,6 +8,16 @@
             "render_bottom": "true",
             "render_top": "true",
             "show_cutaway": "false"
+        },
+        "New set 2": {
+            "chamfer_size": "[10, 10, 300]",
+            "cutaway_depth_x": "300",
+            "cutaway_depth_y": "18",
+            "cutaway_depth_z": "300",
+            "render_battery_cover": "true",
+            "render_bottom": "false",
+            "render_top": "true",
+            "show_cutaway": "true"
         }
     }
 }

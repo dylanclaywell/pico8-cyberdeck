@@ -5,8 +5,6 @@ include <parameters.scad>
 // The thread shaft exits the bottom (through-hole), with a small overshoot
 // on both ends so no cut face sits coincident with a surface.
 module screw_hole(head_depth, head_diameter, thread_length, thread_diameter) {
-  eps = 0.01;
-
   // head counterbore (breaks the top surface)
   translate([0, 0, -head_depth])
     cylinder(h=head_depth + eps, r=head_diameter / 2 + tolerance);
