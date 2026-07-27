@@ -1,4 +1,5 @@
 include <parameters.scad>
+include <hardware.scad>
 
 /* [Cutaway] */
 
@@ -51,6 +52,28 @@ usb_case_depth = usb_pcb_depth + usb_case_bottom_interior_depth + usb_case_top_i
 // face stops where the port's flare begins, so every port sits proud by
 // usb_port_lip. Same on both port faces, so they can't drift apart.
 usb_port_shroud_depth = usb_port_length - usb_case_wall_depth - usb_port_lip;
+
+// The case's outer y run, shroud included. The lip window and the deck hole both
+// key off this, so they can't disagree about how big the case is.
+usb_case_outer_height = usb_case_height + usb_port_shroud_depth;
+
+// Stop lip. Bears on the *outer* face of the cyberdeck wall, so the hub drops
+// in from outside and can go no deeper. Two screws through the y ears hold it
+// both ways; a bracket inside the deck takes the z load.
+usb_case_lip_depth = 4;
+// Asymmetric on purpose: the y ears carry the screws, z stays thin to keep the
+// hub's vertical profile down.
+usb_case_lip_overhang_y = 8;
+usb_case_lip_overhang_z = 2;
+// M3x8, same hardware as case_screw_* in parameters.scad. screw_hole adds
+// tolerance to both radii itself, so these stay nominal.
+usb_case_lip_screw_head_diameter = 5.35;
+usb_case_lip_screw_thread_diameter = 3;
+// Counterbore depth. Stops short of usb_case_lip_depth so there is material left
+// behind the head to pull against.
+usb_case_lip_screw_head_depth = 2;
+// Screw center, measured outboard from the case's y faces
+usb_case_lip_screw_inset = 4;
 
 // ============================================================
 // Cutaway
@@ -116,6 +139,41 @@ module pcb() {
   color("silver") usb_ports();
 }
 
+// The stop lip: a collar standing proud of the case's -x face. Its window is the
+// case footprint, so the deck hole only has to clear the body — the collar itself
+// lands on the deck's outer face and the ports sit recessed inside the pocket.
+module usb_case_lip() {
+  difference() {
+    translate([-usb_case_lip_depth, -usb_case_lip_overhang_y, -usb_case_lip_overhang_z])
+      cube(
+        [
+          usb_case_lip_depth,
+          usb_case_outer_height + (usb_case_lip_overhang_y * 2),
+          usb_case_depth + (usb_case_lip_overhang_z * 2),
+        ]
+      );
+
+    // The window. Its floor is the case's own -x wall, so the ports end up
+    // recessed by usb_case_lip_depth - usb_port_lip.
+    translate([-usb_case_lip_depth - eps, 0, 0])
+      cube([usb_case_lip_depth + (eps * 2), usb_case_outer_height, usb_case_depth]);
+
+    // One screw per y ear, centered on the case depth. screw_hole descends in
+    // -z from the face the head sits flush with, so the origin goes on the lip's
+    // outer face and -90 about y aims the hole inboard, along +x. The thread runs
+    // out whatever the counterbore leaves, making it a through-hole.
+    for (y = [-usb_case_lip_screw_inset, usb_case_outer_height + usb_case_lip_screw_inset])
+      translate([-usb_case_lip_depth, y, usb_case_depth / 2])
+        rotate([0, -90, 0])
+          screw_hole(
+            head_depth=usb_case_lip_screw_head_depth,
+            head_diameter=usb_case_lip_screw_head_diameter,
+            thread_length=usb_case_lip_depth - usb_case_lip_screw_head_depth,
+            thread_diameter=usb_case_lip_screw_thread_diameter
+          );
+  }
+}
+
 module usb_case() {
   difference() {
     color("steelblue") {
@@ -123,7 +181,7 @@ module usb_case() {
         cube(
           [
             usb_port_shroud_depth + usb_case_width,
-            usb_case_height + usb_port_shroud_depth,
+            usb_case_outer_height,
             usb_case_depth,
           ]
         );
@@ -144,6 +202,8 @@ module usb_case() {
           ]
         )
           cylinder(h=usb_case_bottom_interior_depth - tolerance, r=usb_pcb_bottom_mount_size / 2);
+
+      usb_case_lip();
     }
 
     translate(pcb_pos) usb_ports(tolerance);
@@ -156,3 +216,9 @@ cutaway() {
 }
 
 echo("Case depth: ", usb_case_depth);
+echo("Deck hole (y x z): ", usb_case_outer_height, usb_case_depth);
+echo(
+  "Lip outer (y x z): ",
+  usb_case_outer_height + (usb_case_lip_overhang_y * 2),
+  usb_case_depth + (usb_case_lip_overhang_z * 2)
+);

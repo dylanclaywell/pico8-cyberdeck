@@ -2,8 +2,10 @@
     "fileFormatVersion": "1",
     "parameterSets": {
         "New set 1": {
-            "cutaway_at": "2",
-            "show_cutaway": "true",
+            "cutaway_at": "20.5",
+            "cutaway_axis": "x",
+            "cutaway_keep_above": "false",
+            "show_cutaway": "false",
             "usb_case_bottom_interior_depth": "2",
             "usb_case_top_interior_depth": "6",
             "usb_cutout_pos": "16.5",
