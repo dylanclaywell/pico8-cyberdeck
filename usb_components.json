@@ -1,0 +1,23 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": {
+            "cutaway_at": "2",
+            "show_cutaway": "true",
+            "usb_case_bottom_interior_depth": "2",
+            "usb_case_top_interior_depth": "6",
+            "usb_cutout_pos": "16.5",
+            "usb_pcb_depth": "1.6000000000000001",
+            "usb_pcb_height": "61.5",
+            "usb_pcb_width": "25.5",
+            "usb_port_depth": "6",
+            "usb_port_gap": "5.8499999999999996",
+            "usb_port_interior_length": "12.85",
+            "usb_port_length": "13.9",
+            "usb_port_overlap": "4",
+            "usb_port_width": "13.199999999999999",
+            "usb_x_cutout_depth": "9",
+            "usb_y_cutout_depth": "15"
+        }
+    }
+}
