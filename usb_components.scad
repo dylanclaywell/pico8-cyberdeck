@@ -79,11 +79,13 @@ module cutaway(axis = cutaway_axis, at = cutaway_at, keep_above = cutaway_keep_a
   }
 }
 
-// Where the board sits inside the case. Shared by the drawn PCB and the port
-// cutouts so the two can't drift apart when a dimension changes.
+// Where the board sits inside the case. Shared by the drawn PCB, the port
+// cutouts, the interior pocket and the mount posts so they can't drift apart
+// when a dimension changes. The case's left face is x = 0 and its front face is
+// y = 0, so the -x shroud pushes the board inboard by usb_port_shroud_depth.
 pcb_pos = [
-  usb_case_width / 2 - usb_pcb_width / 2,
-  usb_case_height / 2 - usb_pcb_height / 2,
+  usb_port_shroud_depth + usb_case_wall_depth,
+  usb_case_wall_depth,
   usb_case_wall_depth + usb_case_bottom_interior_depth,
 ];
 
@@ -118,19 +120,17 @@ module usb_case() {
   difference() {
     color("steelblue") {
       difference() {
-        translate([-usb_port_shroud_depth, 0, 0])
-          cube(
-            [
-              usb_port_shroud_depth + usb_case_width,
-              usb_case_height + usb_port_shroud_depth,
-              usb_case_depth,
-            ]
-          );
+        cube(
+          [
+            usb_port_shroud_depth + usb_case_width,
+            usb_case_height + usb_port_shroud_depth,
+            usb_case_depth,
+          ]
+        );
 
-        // The board footprint plus slop. usb_case_width/height are the board
-        // plus two walls, so subtracting the walls back out just restates
-        // usb_pcb_width/height.
-        translate([usb_case_wall_depth - tolerance, usb_case_wall_depth - tolerance, usb_case_wall_depth])
+        // The board footprint plus slop, taken straight off the board position
+        // so the pocket follows the board.
+        translate([pcb_pos[0] - tolerance, pcb_pos[1] - tolerance, usb_case_wall_depth])
           cube([usb_pcb_width + (tolerance * 2), usb_pcb_height + (tolerance * 2), usb_case_depth - (usb_case_wall_depth * 2)]);
       }
 
@@ -138,8 +138,8 @@ module usb_case() {
       for (pos = usb_pcb_bottom_mount_positions)
         translate(
           [
-            usb_case_wall_depth + pos[0] - usb_pcb_bottom_mount_size / 2,
-            usb_case_wall_depth + pos[1] - usb_pcb_bottom_mount_size / 2,
+            pcb_pos[0] + pos[0] - usb_pcb_bottom_mount_size / 2,
+            pcb_pos[1] + pos[1] - usb_pcb_bottom_mount_size / 2,
             usb_case_wall_depth,
           ]
         )
