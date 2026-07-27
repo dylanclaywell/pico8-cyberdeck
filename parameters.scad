@@ -95,8 +95,8 @@ keyboard_y = 20;
 battery_pack_width = 87;
 battery_pack_height = 63.65;
 
-battery_x = interior_width - (battery_pack_width) - 25;
-battery_y = interior_height - (battery_pack_height) - 16;
+battery_x = interior_width - (battery_pack_width) - 23;
+battery_y = interior_height - (battery_pack_height) - 17;
 
 battery_pack_cover_width = battery_pack_width + 6;
 battery_pack_cover_height = battery_pack_height + 6;
@@ -111,8 +111,8 @@ screen_height = 84;
 // Called it _to_mount because this is the amount of space from the top of the case to the mount posts
 screen_depth_to_mount = 24.80;
 
-screen_x = 20;
-screen_y = interior_height - (screen_height) - 5;
+screen_x = 25;
+screen_y = interior_height - (screen_height) - 7;
 
 screen_screw_thread_diameter = 2.5;
 screen_screw_head_diameter = 4;
