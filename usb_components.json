@@ -2,9 +2,12 @@
     "fileFormatVersion": "1",
     "parameterSets": {
         "New set 1": {
-            "cutaway_at": "20.5",
-            "cutaway_axis": "x",
-            "cutaway_keep_above": "false",
+            "cutaway_at": "-2.5",
+            "cutaway_axis": "y",
+            "cutaway_keep_above": "true",
+            "render_bottom": "true",
+            "render_pcb": "true",
+            "render_top": "true",
             "show_cutaway": "false",
             "usb_case_bottom_interior_depth": "2",
             "usb_case_top_interior_depth": "6",
