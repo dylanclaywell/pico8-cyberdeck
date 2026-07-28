@@ -239,7 +239,7 @@ module usb_case_lip() {
   }
 }
 
-module usb_case() {
+module usb_case_base() {
   difference() {
     difference() {
       color("steelblue") {
@@ -318,7 +318,7 @@ module usb_case_bottom() {
   difference() {
     difference() {
       union() {
-        half_of(v=[0, 0, -1], cp=[0, 0, usb_case_depth / 2], s=1000) usb_case();
+        half_of(v=[0, 0, -1], cp=[0, 0, usb_case_depth / 2], s=1000) usb_case_base();
 
         usb_case_bottom_lip();
 
@@ -383,7 +383,7 @@ module usb_case_top() {
   difference() {
     difference() {
       union() {
-        half_of(cp=[0, 0, usb_case_depth / 2], s=1000) usb_case();
+        half_of(cp=[0, 0, usb_case_depth / 2], s=1000) usb_case_base();
 
         usb_case_top_screw_mount_depth = 4;
         translate([m2_screw_pos2[0], m2_screw_pos2[1], usb_case_depth - usb_case_wall_depth - usb_case_top_screw_mount_depth])
@@ -407,6 +407,11 @@ cutaway() {
   if (render_top) usb_case_top();
   if (render_bottom) usb_case_bottom();
   if (render_pcb) translate(pcb_pos) pcb();
+}
+
+module usb_case() {
+  usb_case_top();
+  usb_case_bottom();
 }
 
 echo("Case width: ", usb_case_width + (usb_case_wall_depth * 2));
