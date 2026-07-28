@@ -75,11 +75,23 @@ usb_case_wall_x_neg = usb_port_shroud_depth + usb_case_wall_depth;
 usb_case_outer_width = usb_case_wall_x_neg + usb_pcb_width + usb_case_wall_depth;
 usb_case_outer_height = usb_case_height + usb_port_shroud_depth;
 
+m2_4_threaded_insert_length = 3.9;
+m2_4_threaded_insert_diameter = 3.33;
+m2_screw_head_diameter = 3.7;
+m2_screw_thread_diameter = 2;
+
+m3_6_threaded_insert_length = 6;
+m3_6_threaded_insert_diameter = 4;
+m3_screw_head_diameter = 5.5;
+m3_screw_thread_diameter = 3;
+
 // Stop lip. Bears on the *outer* face of the cyberdeck wall, so the hub drops
-// in from outside and can go no deeper. Two screws through the y ears hold it
-// both ways; a bracket inside the deck takes the z load.
+// in from outside and can go no deeper. Flange screws through the y overhang land
+// in nuts on the wall's inner face and stop it being pulled back out.
 usb_case_lip_depth = 4;
-usb_case_lip_overhang_y = 2;
+// The y overhang carries the flange screw heads, not just bearing surface, so it has
+// to fit a head plus material either side of it. The z overhang only ever bears.
+usb_case_lip_overhang_y = m3_screw_head_diameter + 4;
 usb_case_lip_overhang_z = 2;
 
 // The collar straddles x = 0 instead of standing entirely forward of the body.
@@ -94,16 +106,8 @@ usb_case_lip_proud = usb_case_lip_depth / 2;
 // hole has to clear.
 usb_deck_face_x = usb_case_lip_depth - usb_case_lip_proud;
 
-m2_4_threaded_insert_length = 3.9;
-m2_4_threaded_insert_diameter = 3.33;
-m2_screw_head_diameter = 3.7;
-m2_screw_thread_diameter = 2;
-
-m3_6_threaded_insert_length = 6;
-m3_6_threaded_insert_diameter = 4;
-m3_screw_head_diameter = 5.5;
-m3_screw_thread_diameter = 3;
-
+// This is intentionally "wall_depth", i.e. the cyberdeck case wall depth.
+// This way the screw positions do not interfere with the wall of the deck.
 m2_screw_pos1 = [usb_case_lip_depth / 2 + wall_depth + m2_4_threaded_insert_diameter, 70];
 m2_screw_pos2 = [33.5, 10];
 
@@ -112,13 +116,19 @@ m2_screw_positions = [
   m2_screw_pos2,
 ];
 
-m3_ear_width = 10;
+// Flange screws, as [y, z] — the axis is +x, through the collar and the deck wall into
+// a hex nut on the wall's inner face. This replaces the old +x mounting ears, which
+// cost 10mm on the tightest axis to resist pull-out 38mm deeper than necessary.
+//
+// z is usb_case_depth / 4, not / 2: the collar spans the top/bottom split at
+// usb_case_depth / 2, so a screw centered there would be half in each part. Both sit
+// in the bottom half; the top is held down by the m2 screws.
+usb_flange_screw_inset = usb_case_lip_overhang_y / 2;
 
-m3_screw_positions = [
-  // [20, -m3_ear_width / 2],
-  // [35, usb_case_outer_height + m3_ear_width / 2],
-  [usb_case_outer_width + m3_ear_width / 2, usb_case_outer_height / 4],
-  [usb_case_outer_width + m3_ear_width / 2, usb_case_outer_height - usb_case_outer_height / 4],
+// Subtracting 1mm from the z position of the flange screws to ensure proper clearance
+usb_flange_screw_positions = [
+  [-usb_flange_screw_inset, usb_case_depth / 4 - 1],
+  [usb_case_outer_height + usb_flange_screw_inset, usb_case_depth / 4 - 1],
 ];
 
 // ============================================================
@@ -204,6 +214,20 @@ module usb_case_lip() {
     // end up recessed by usb_case_lip_proud - usb_port_lip.
     translate([-usb_case_lip_proud - eps, 0, 0])
       cube([usb_case_lip_proud + (eps * 2), usb_case_outer_height, usb_case_depth]);
+
+    // Flange screw holes. screw_hole() descends in -z from the face the head sits flush
+    // with, so rotate -z onto +x: head flush with the collar's outer face, shaft running
+    // on through the deck wall to a nut behind it.
+    for (pos = usb_flange_screw_positions)
+      translate([-usb_case_lip_proud, pos[0], pos[1]])
+        rotate([0, -90, 0])
+          color("red")
+            screw_hole(
+              head_depth=usb_case_lip_proud,
+              head_diameter=m3_screw_head_diameter,
+              usb_case_lip_depth,
+              m3_screw_thread_diameter,
+            );
   }
 }
 
@@ -281,25 +305,27 @@ module usb_case_bottom() {
     // Threaded insert holes
     usb_case_threaded_insert_holes();
   }
+}
 
-  for (pos = m3_screw_positions)
-    translate([pos[0], pos[1]]) {
-      difference() {
-
-        translate([-m3_ear_width / 2, -m3_ear_width / 2, 0])
-          cube([m3_ear_width, m3_ear_width, usb_case_depth / 2 + eps]);
-
-        color("red")
-          // cylinder(h=100 + eps, r=m3_6_threaded_insert_diameter / 2);
-          translate([0, 0, (usb_case_depth / 2) + eps])
-            screw_hole(
-              head_depth=(usb_case_depth / 2) - 2,
-              head_diameter=m3_screw_head_diameter,
-              8,
-              m3_screw_thread_diameter,
-            );
-      }
-    }
+// Keep-out volume for the hub: everything the case occupies once it's seated. Not a
+// wall hole — the case sits square to the deck floor while the deck interior is skewed,
+// so this carves a channel through whatever it passes. Starts at usb_deck_face_x: the
+// collar stays outside and bears on the deck's outer face there, so that plane must keep
+// its material, and the flange overhang sits clear of this footprint entirely.
+//
+// MUST be placed outside interior_cutout_translate(), unlike every other cutout in
+// case_cutouts() — inheriting the wedge skew would tilt the hub off the case bottom.
+// The hub's own origin sits usb_deck_face_x proud of the wall, so place it at
+// -usb_deck_face_x to land the collar on a deck exterior face at x = 0.
+module usb_case_cutout(t = tolerance) {
+  translate([usb_deck_face_x - eps, -t, -t])
+    cube(
+      [
+        usb_case_outer_width - usb_deck_face_x + eps + t,
+        usb_case_outer_height + (t * 2),
+        usb_case_depth + (t * 2),
+      ]
+    );
 }
 
 module usb_case_top() {
@@ -329,3 +355,5 @@ cutaway() {
 }
 
 echo("Case width: ", usb_case_width + (usb_case_wall_depth * 2));
+
+translate([100, 0, 0]) %usb_case_cutout(tolerance);

@@ -4,6 +4,7 @@ include <parameters.scad>
 use <keyboard_components.scad>
 use <battery_components.scad>
 use <screen_components.scad>
+use <usb_components.scad>
 use <hardware.scad>
 
 show_cutaway = true;
@@ -253,5 +254,12 @@ cutaway() {
     }
   }
 
-  if (render_bottom) case_bottom();
+  if (render_bottom) {
+    difference() {
+      case_bottom();
+      translate([-2, 100, 6]) usb_case_cutout(tolerance);
+    }
+  }
+
+  // translate([-2, 100, 6]) usb_case();
 }

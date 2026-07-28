@@ -111,7 +111,7 @@ screen_height = 84;
 // Called it _to_mount because this is the amount of space from the top of the case to the mount posts
 screen_depth_to_mount = 24.80;
 
-screen_x = 25;
+screen_x = 30;
 screen_y = interior_height - (screen_height) - 7;
 
 screen_screw_thread_diameter = 2.5;
