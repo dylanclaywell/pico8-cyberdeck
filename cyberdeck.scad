@@ -12,6 +12,7 @@ show_cutaway = true;
 render_top = false;
 render_bottom = true;
 render_battery_cover = true;
+render_usb_hub = true;
 
 cutaway_depth_x = 300; // [0:300]
 cutaway_depth_y = 180; // [0:300]
@@ -257,9 +258,13 @@ cutaway() {
   if (render_bottom) {
     difference() {
       case_bottom();
-      translate([-2, 100, 6]) usb_case_cutout(tolerance);
+
+      // Outside interior_cutout_translate() on purpose — the hub is square to the floor, not
+      // to the wedge.
+      translate(usb_hub_pos) usb_case_cutout(tolerance);
+      translate(usb_hub_pos) usb_case_flange_holes();
     }
   }
 
-  // translate([-2, 100, 6]) usb_case();
+  if (render_usb_hub) translate(usb_hub_pos) usb_case();
 }

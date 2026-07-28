@@ -2,8 +2,11 @@ include <parameters.scad>
 
 screen_mount_depth = interior_depth - screen_depth_to_mount;
 
+// The screen's own standoff pattern, 10 in from each corner — not free to move. The
+// low-x/low-y corner is deliberately omitted: its floor washer pocket would land inside the
+// USB hub keep-out (deck x 0 -> 38.7), and the hub notches the plinth there anyway. Three
+// corners carries an 84mm panel, and it keeps the screen centered in its screw bay.
 screw_hole_positions = [
-  [10, 10, 0],
   [screen_width - 10, 10, 0],
   [10, screen_height - 10, 0],
   [screen_width - 10, screen_height - 10, 0],

@@ -111,7 +111,12 @@ screen_height = 84;
 // Called it _to_mount because this is the amount of space from the top of the case to the mount posts
 screen_depth_to_mount = 24.80;
 
-screen_x = 30;
+// Centered in the bay bounded by the left corner screws and the mid-span pair. The USB hub
+// keep-out (deck x 0 -> 38.7) notches this plinth's left edge, which is fine, but it also
+// covers where the screen's low-x/low-y floor screw pocket would go. That one screw is
+// omitted in screen_components.scad rather than shifting the screen off center — moving it
+// would decenter the battery too, since the mid screws bound its bay as well.
+screen_x = 25;
 screen_y = interior_height - (screen_height) - 7;
 
 screen_screw_thread_diameter = 2.5;
@@ -125,6 +130,16 @@ screen_screw_head_depth = 3.85;
 // ============================================================
 // Hub
 // ============================================================
+
+// Where the hub sits, in *exterior* deck coords — it does NOT go through
+// interior_cutout_translate(), because the case sits square to the deck floor rather than
+// following the wedge. Everything hub-related keys off this so the keep-out and the flange
+// holes can't drift apart.
+//
+// x is -usb_deck_face_x (the collar's back face, half of usb_case_lip_depth), which lands the
+// flange on the wall's outer surface at x = 0. Written as a literal because cyberdeck.scad
+// pulls usb_components.scad in with `use`, so only its modules cross over, not its variables.
+usb_hub_pos = [-2, 100, 6];
 
 hub_board_height = 61.45;
 hub_board_width = 25.40;

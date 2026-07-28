@@ -120,15 +120,20 @@ m2_screw_positions = [
 // a hex nut on the wall's inner face. This replaces the old +x mounting ears, which
 // cost 10mm on the tightest axis to resist pull-out 38mm deeper than necessary.
 //
-// z is usb_case_depth / 4, not / 2: the collar spans the top/bottom split at
-// usb_case_depth / 2, so a screw centered there would be half in each part. Both sit
-// in the bottom half; the top is held down by the m2 screws.
+// z can't be usb_case_depth / 2 — the collar spans the top/bottom split there and a screw
+// centered on it would be half in each part. It also can't be in the bottom half: the deck's
+// interior floor is skewed while these two holes share one z, and over the 86mm between them
+// the floor climbs 3mm, which buries the +y hole in a bottom wall 9.8mm thick with nowhere to
+// seat its nut. So both live in the TOP half, clear of the floor at either y. The hub's top
+// half bolts to the deck and the bottom half hangs from it on the m2 screws.
+//
+// The + 1 pushes the counterbore off the split: the head is m3_screw_head_diameter / 2 plus
+// tolerance in radius, so at exactly 3/4 depth it would come within 0.35mm of the seam.
 usb_flange_screw_inset = usb_case_lip_overhang_y / 2;
 
-// Subtracting 1mm from the z position of the flange screws to ensure proper clearance
 usb_flange_screw_positions = [
-  [-usb_flange_screw_inset, usb_case_depth / 4 - 1],
-  [usb_case_outer_height + usb_flange_screw_inset, usb_case_depth / 4 - 1],
+  [-usb_flange_screw_inset, (usb_case_depth / 4 * 3) + 1],
+  [usb_case_outer_height + usb_flange_screw_inset, (usb_case_depth / 4 * 3) + 1],
 ];
 
 // ============================================================
@@ -317,15 +322,39 @@ module usb_case_bottom() {
 // case_cutouts() — inheriting the wedge skew would tilt the hub off the case bottom.
 // The hub's own origin sits usb_deck_face_x proud of the wall, so place it at
 // -usb_deck_face_x to land the collar on a deck exterior face at x = 0.
+// The +y run carries usb_port_lip on top of the case face: that port stands proud of its
+// wall exactly like the side ports do on -x. The side ports point along the insertion slide
+// so they lead the way, but this one is broadside to it, and 1mm of flange over 38mm of
+// travel stops the case entering at all. The collar overhangs +y by usb_case_lip_overhang_y,
+// so the extra hole stays hidden behind the flange.
 module usb_case_cutout(t = tolerance) {
   translate([usb_deck_face_x - eps, -t, -t])
     cube(
       [
         usb_case_outer_width - usb_deck_face_x + eps + t,
-        usb_case_outer_height + (t * 2),
+        usb_case_outer_height + usb_port_lip + (t * 2),
         usb_case_depth + (t * 2),
       ]
     );
+}
+
+// The deck-side half of the flange fastening: one clearance hole per flange screw, bored +x
+// through the wall the collar bears on, for a bolt captured by a hex nut on the inner face.
+//
+// Reads usb_flange_screw_positions, the same list usb_case_lip() drills, so the two halves
+// can't disagree. Place it with the SAME translate as usb_case_cutout() — it's in the hub's
+// frame, not the wall's.
+//
+// `through` is wall_depth PLUS the bottom lip: these screws sit low enough to land in the
+// clamshell lip, which stands case_bottom_lip_depth inboard of the wall so the bottom half
+// prints without supports. A bare wall_depth bore stops 2mm short of daylight. Overshoot is
+// free — past the lip it's interior air.
+module usb_case_flange_holes(t = tolerance, through = wall_depth + tolerance + case_bottom_lip_depth) {
+  for (pos = usb_flange_screw_positions)
+    translate([usb_deck_face_x - eps, pos[0], pos[1]])
+      rotate([0, 90, 0])
+        color("red")
+          cylinder(h=through + (eps * 2), r=m3_screw_thread_diameter / 2 + t);
 }
 
 module usb_case_top() {
