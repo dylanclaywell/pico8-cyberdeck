@@ -75,6 +75,9 @@ usb_case_wall_x_neg = usb_port_shroud_depth + usb_case_wall_depth;
 usb_case_outer_width = usb_case_wall_x_neg + usb_pcb_width + usb_case_wall_depth;
 usb_case_outer_height = usb_case_height + usb_port_shroud_depth;
 
+usb_case_cable_hole_diameter = 8;
+usb_case_cable_hole_pos = [usb_case_outer_width, 25, usb_case_depth / 2];
+
 m2_4_threaded_insert_length = 3.9;
 m2_4_threaded_insert_diameter = 3.33;
 m2_screw_head_diameter = 3.7;
@@ -238,37 +241,39 @@ module usb_case_lip() {
 
 module usb_case() {
   difference() {
-    color("steelblue") {
-      difference() {
-        cube(
-          [
-            usb_case_outer_width,
-            usb_case_outer_height,
-            usb_case_depth,
-          ]
-        );
+    difference() {
+      color("steelblue") {
+        difference() {
+          cube(
+            [
+              usb_case_outer_width,
+              usb_case_outer_height,
+              usb_case_depth,
+            ]
+          );
 
-        // The board footprint plus slop, taken straight off the board position
-        // so the pocket follows the board.
-        translate([pcb_pos[0] - tolerance, pcb_pos[1] - tolerance, usb_case_wall_depth])
-          cube([usb_pcb_width + (tolerance * 2), usb_pcb_height + (tolerance * 2), usb_case_depth - (usb_case_wall_depth * 2)]);
+          // The board footprint plus slop, taken straight off the board position
+          // so the pocket follows the board.
+          translate([pcb_pos[0] - tolerance, pcb_pos[1] - tolerance, usb_case_wall_depth])
+            cube([usb_pcb_width + (tolerance * 2), usb_pcb_height + (tolerance * 2), usb_case_depth - (usb_case_wall_depth * 2)]);
+        }
+
+        // Bottom mount posts
+        for (pos = usb_pcb_bottom_mount_positions)
+          translate(
+            [
+              pcb_pos[0] + pos[0] - usb_pcb_bottom_mount_size / 2,
+              pcb_pos[1] + pos[1] - usb_pcb_bottom_mount_size / 2,
+              usb_case_wall_depth,
+            ]
+          )
+            cylinder(h=usb_case_bottom_interior_depth - tolerance, r=usb_pcb_bottom_mount_size / 2);
+
+        usb_case_lip();
       }
 
-      // Bottom mount posts
-      for (pos = usb_pcb_bottom_mount_positions)
-        translate(
-          [
-            pcb_pos[0] + pos[0] - usb_pcb_bottom_mount_size / 2,
-            pcb_pos[1] + pos[1] - usb_pcb_bottom_mount_size / 2,
-            usb_case_wall_depth,
-          ]
-        )
-          cylinder(h=usb_case_bottom_interior_depth - tolerance, r=usb_pcb_bottom_mount_size / 2);
-
-      usb_case_lip();
+      translate(pcb_pos) usb_ports(tolerance);
     }
-
-    translate(pcb_pos) usb_ports(tolerance);
   }
 }
 
@@ -296,19 +301,36 @@ module usb_case_threaded_insert_holes() {
         cylinder(h=m2_4_threaded_insert_length + eps, r=m2_4_threaded_insert_diameter / 2);
 }
 
+module usb_case_cable_hole() {
+  // Cable hole
+  translate(
+    [
+      usb_case_cable_hole_pos[0] - usb_case_wall_depth - usb_case_bottom_lip_depth,
+      usb_case_cable_hole_pos[1],
+      usb_case_cable_hole_pos[2] - eps,
+    ]
+  )
+    rotate([0, 90, 0])
+      cylinder(h=usb_case_depth + (eps * 2), r=usb_case_cable_hole_diameter / 2);
+}
+
 module usb_case_bottom() {
   difference() {
-    union() {
-      half_of(v=[0, 0, -1], cp=[0, 0, usb_case_depth / 2], s=1000) usb_case();
+    difference() {
+      union() {
+        half_of(v=[0, 0, -1], cp=[0, 0, usb_case_depth / 2], s=1000) usb_case();
 
-      usb_case_bottom_lip();
+        usb_case_bottom_lip();
 
-      translate([m2_screw_pos2[0], m2_screw_pos2[1], usb_case_wall_depth])
-        cylinder(h=usb_case_depth / 2 - usb_case_wall_depth, r=m2_4_threaded_insert_diameter);
+        translate([m2_screw_pos2[0], m2_screw_pos2[1], usb_case_wall_depth])
+          cylinder(h=usb_case_depth / 2 - usb_case_wall_depth, r=m2_4_threaded_insert_diameter);
+      }
+
+      // Threaded insert holes
+      usb_case_threaded_insert_holes();
     }
 
-    // Threaded insert holes
-    usb_case_threaded_insert_holes();
+    usb_case_cable_hole();
   }
 }
 
@@ -359,21 +381,25 @@ module usb_case_flange_holes(t = tolerance, through = wall_depth + tolerance + c
 
 module usb_case_top() {
   difference() {
-    union() {
-      half_of(cp=[0, 0, usb_case_depth / 2], s=1000) usb_case();
+    difference() {
+      union() {
+        half_of(cp=[0, 0, usb_case_depth / 2], s=1000) usb_case();
 
-      usb_case_top_screw_mount_depth = 4;
-      translate([m2_screw_pos2[0], m2_screw_pos2[1], usb_case_depth - usb_case_wall_depth - usb_case_top_screw_mount_depth])
-        cylinder(h=usb_case_top_screw_mount_depth, r=m2_4_threaded_insert_diameter);
+        usb_case_top_screw_mount_depth = 4;
+        translate([m2_screw_pos2[0], m2_screw_pos2[1], usb_case_depth - usb_case_wall_depth - usb_case_top_screw_mount_depth])
+          cylinder(h=usb_case_top_screw_mount_depth, r=m2_4_threaded_insert_diameter);
+      }
+
+      for (pos = m2_screw_positions)
+        translate([pos[0], pos[1], usb_case_depth])
+          screw_hole(
+            head_depth=usb_case_depth / 2 - 2, head_diameter=m2_screw_head_diameter,
+            8,
+            m2_screw_thread_diameter,
+          );
     }
 
-    for (pos = m2_screw_positions)
-      translate([pos[0], pos[1], usb_case_depth])
-        screw_hole(
-          head_depth=usb_case_depth / 2 - 2, head_diameter=m2_screw_head_diameter,
-          8,
-          m2_screw_thread_diameter,
-        );
+    usb_case_cable_hole();
   }
 }
 
