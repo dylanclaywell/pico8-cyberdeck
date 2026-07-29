@@ -2,8 +2,6 @@
     "fileFormatVersion": "1",
     "parameterSets": {
         "New set 1": {
-            "cutaway_depth_x": "300",
-            "cutaway_depth_y": "35",
             "render_battery_cover": "true",
             "render_bottom": "true",
             "render_top": "true",
@@ -11,13 +9,20 @@
         },
         "New set 2": {
             "chamfer_size": "[10, 10, 300]",
-            "cutaway_depth_x": "300",
-            "cutaway_depth_y": "18",
-            "cutaway_depth_z": "300",
             "render_battery_cover": "true",
             "render_bottom": "false",
             "render_top": "true",
             "show_cutaway": "true"
+        },
+        "New set 3": {
+            "chamfer_size": "[10, 10, 300]",
+            "cutaway_at": "75",
+            "cutaway_axis": "y",
+            "render_battery_cover": "true",
+            "render_bottom": "true",
+            "render_top": "false",
+            "render_usb_hub": "true",
+            "show_cutaway": "false"
         }
     }
 }

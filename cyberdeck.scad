@@ -7,16 +7,23 @@ use <screen_components.scad>
 use <usb_components.scad>
 use <hardware.scad>
 
+/* [Cutaway] */
+
+// Slice the model open to see the interior
 show_cutaway = true;
+// Axis the cut plane is perpendicular to
+cutaway_axis = "y"; // [x, y, z]
+// Where the cut plane sits along that axis
+cutaway_at = 90; // [0:0.5:260]
+// Keep the side with the larger coordinate rather than the smaller
+cutaway_keep_above = true;
+
+/* [Rendering] */
 
 render_top = false;
 render_bottom = true;
 render_battery_cover = true;
 render_usb_hub = true;
-
-cutaway_depth_x = 300; // [0:300]
-cutaway_depth_y = 180; // [0:300]
-cutaway_depth_z = 300; // [0:40]
 
 chamfer_size = [10, 10, 300];
 
@@ -130,13 +137,25 @@ module case_bottom_screw_mounts() {
   }
 }
 
-module cutaway() {
+// A cut is described as a plane, not as a box: pick an axis, pick where along
+// it to slice, pick which side to keep. `reach` is the size of the discarded
+// solid and only has to overshoot the model, so nothing needs hand-tuning.
+module cutaway(axis = cutaway_axis, at = cutaway_at, keep_above = cutaway_keep_above, enabled = show_cutaway, reach = 600) {
+  // Fail loudly on a bad axis. Without this a typo is silent: "Y" falls
+  // through the lookup below and cuts z, giving wrong geometry, not an error.
+  assert(axis == "x" || axis == "y" || axis == "z", str("cutaway: bad axis '", axis, "'"));
+
+  i = axis == "x" ? 0 : axis == "y" ? 1 : 2;
+
+  // On the cut axis the discarded solid starts at the plane and runs away from
+  // the side being kept; on the other two it is centered so it spans the model.
+  origin = [for (k = [0:2]) k == i ? (keep_above ? at - reach : at) : -reach / 2];
+
   difference() {
     children();
 
-    if (show_cutaway)
-      translate([-1, -1, -eps])
-        cube([cutaway_depth_x + eps, cutaway_depth_y + eps, cutaway_depth_z + eps]);
+    if (enabled)
+      translate(origin) cube(reach);
   }
 }
 
