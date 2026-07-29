@@ -43,13 +43,16 @@ usb_y_cutout_depth = 15;
 
 // This is the amount of overlap between the USB port and the PCB cutout
 usb_port_overlap = 4;
-// This is the depth of the USB port from the front lip of the port to the back of the port
-usb_port_interior_length = 12.85;
+// Whole connector body, overlap included. NOT the stick-out.
 usb_port_length = 13.9;
 usb_port_width = 13.2;
 usb_port_depth = 6;
 usb_port_gap = 5.85;
 usb_port_lip = 1;
+
+// Stick-out past the board edge. Read by usb_port_shroud_depth and usb_ports().
+// Using usb_port_length here by itself instead grows the case by the overlap.
+usb_port_protrusion = usb_port_length - usb_port_overlap;
 
 usb_case_wall_depth = 2;
 usb_case_width = usb_pcb_width + (usb_case_wall_depth * 2);
@@ -61,7 +64,7 @@ usb_case_bottom_lip_depth = 3;
 // How far the case runs past its normal wall to shroud the ports. The case
 // face stops where the port's flare begins, so every port sits proud by
 // usb_port_lip. Same on both port faces, so they can't drift apart.
-usb_port_shroud_depth = usb_port_length - usb_case_wall_depth - usb_port_lip;
+usb_port_shroud_depth = usb_port_protrusion - usb_case_wall_depth - usb_port_lip;
 
 // The -x wall is not a normal wall: it carries the shroud, so it runs thick and
 // the ports bore through it. Every interior x position keys off this, so the
@@ -112,8 +115,8 @@ usb_deck_face_x = usb_case_lip_depth - usb_case_lip_proud;
 
 // This is intentionally "wall_depth", i.e. the cyberdeck case wall depth.
 // This way the screw positions do not interfere with the wall of the deck.
-m2_screw_pos1 = [usb_case_lip_depth / 2 + wall_depth + m2_4_threaded_insert_diameter, 70];
-m2_screw_pos2 = [33.5, 10];
+m2_screw_pos1 = [usb_case_lip_depth / 2 + wall_depth + m2_4_threaded_insert_diameter, 68];
+m2_screw_pos2 = [29.5, 10];
 
 m2_screw_positions = [
   m2_screw_pos1,
@@ -180,16 +183,21 @@ pcb_pos = [
 // Every USB port, in PCB coordinates. `t` is grown clearance: 0 draws the real
 // connectors, tolerance draws the pocket they sit in. One definition, so a port
 // can't be added without its cutout following along.
+//
+// A port straddles the board edge it's soldered to. Along its own axis it spans
+// usb_port_length: usb_port_overlap of that on the board side of the edge,
+// usb_port_protrusion on the air side. Outboard is -x for the side ports and +y
+// for the far one, so which end is negative differs per port.
 module usb_ports(t = 0) {
   // Three side ports, facing -x. Clearance is applied on the -x face too, so
   // the pocket keeps clearing the front slab even if usb_port_lip changes.
   for (i = [0:2])
-    translate([-usb_port_length - t, 5 + i * (usb_port_width + usb_port_gap) - t, -t])
-      cube([usb_port_length + usb_port_overlap + (t * 2), usb_port_width + (t * 2), usb_port_depth + (t * 2)]);
+    translate([-usb_port_protrusion - t, 5 + i * (usb_port_width + usb_port_gap) - t, -t])
+      cube([usb_port_length + (t * 2), usb_port_width + (t * 2), usb_port_depth + (t * 2)]);
 
   // One port on the far edge, facing +y.
   translate([usb_port_overlap - t, usb_pcb_height - usb_port_overlap - t, -t])
-    cube([usb_port_width + (t * 2), usb_port_length + usb_port_overlap + (t * 2), usb_port_depth + (t * 2)]);
+    cube([usb_port_width + (t * 2), usb_port_length + (t * 2), usb_port_depth + (t * 2)]);
 }
 
 module pcb() {

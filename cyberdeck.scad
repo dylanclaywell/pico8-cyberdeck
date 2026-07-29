@@ -29,12 +29,13 @@ chamfer_size = [10, 10, 300];
 
 // Corner chamfer cut transforms for a w x h rectangle: position + rotation
 // for each of the 4 corners, meant to be subtracted with chamfer_size.
-function corner_chamfer_transforms(w, h) = [
-  [[0, 0, 0], 45],
-  [[0, h, 0], 45],
-  [[w, h, 0], 45],
-  [[w, 0, 0], 45],
-];
+function corner_chamfer_transforms(w, h) =
+  [
+    [[0, 0, 0], 45],
+    [[0, h, 0], 45],
+    [[w, h, 0], 45],
+    [[w, 0, 0], 45],
+  ];
 
 chamfer_transforms = corner_chamfer_transforms(exterior_width, exterior_height);
 interior_chamfer_transforms = corner_chamfer_transforms(interior_width, interior_height);
