@@ -60,6 +60,7 @@ usb_case_height = usb_pcb_height + (usb_case_wall_depth * 2);
 usb_case_depth = usb_pcb_depth + usb_case_bottom_interior_depth + usb_case_top_interior_depth + (usb_case_wall_depth * 2);
 
 usb_case_bottom_lip_depth = 3;
+usb_case_bottom_lip_width = 1;
 
 // How far the case runs past its normal wall to shroud the ports. The case
 // face stops where the port's flare begins, so every port sits proud by
@@ -286,21 +287,43 @@ module usb_case_base() {
   }
 }
 
-// This is the lip that guides the top case into place, ensuring it aligns correctly with the bottom case.
-module usb_case_bottom_lip() {
-  translate([pcb_pos[0] - tolerance, pcb_pos[1] - tolerance, usb_case_depth / 2 - 1])
-    linear_extrude(height=usb_case_bottom_lip_depth)
-      difference() {
-        difference() {
-          square([usb_pcb_width + (tolerance * 2), usb_pcb_height + (tolerance * 2)], center=false);
+// The lip that aligns the top half to the bottom. Two runs standing on the split face,
+// OUTBOARD of the board pocket. It used to be a ring inset usb_case_bottom_lip_width INTO
+// the pocket, which left a 25.1 x 61.1 window over a 25.5 x 61.5 board: the board could not
+// be lowered in, only wedged, and it landed port side high.
+//
+// Only -x and +y carry a run. Those walls are shroud-thick, while +x and -y are bare
+// usb_case_wall_depth and a run plus its groove would leave them a 0.6mm skin. The -x run
+// lies along y so it stops x drift, the +y run lies along x so it stops y drift, so dropping
+// the other two costs no registration.
+//
+// t grows the runs into the groove usb_case_top() cuts, so lip and groove can't disagree.
+module usb_case_bottom_lip(t = 0) {
+  pocket_x = pcb_pos[0] - tolerance;
+  pocket_y = pcb_pos[1] - tolerance;
+  pocket_w = usb_pcb_width + (tolerance * 2);
+  pocket_h = usb_pcb_height + (tolerance * 2);
+  w = usb_case_bottom_lip_width;
 
-          offset(delta=-1) square([usb_pcb_width + (tolerance * 2), usb_pcb_height + (tolerance * 2)], center=false);
-        }
+  difference() {
+    union() {
+      // -x run, along y. Overruns the pocket by w at both ends to meet the +y run.
+      translate([pocket_x - w - t, pocket_y - w - t, usb_case_depth / 2 - t])
+        cube([w + (t * 2), pocket_h + (w * 2) + (t * 2), usb_case_bottom_lip_depth + (t * 2)]);
 
-        //remove the left and top edges of the square so the pcb can fit
-        translate([-1, 1, -1])
-          square([usb_pcb_width + (tolerance * 2), usb_pcb_height + (tolerance * 2)], center=false);
-      }
+      // +y run, along x.
+      translate([pocket_x - w - t, pocket_y + pocket_h - t, usb_case_depth / 2 - t])
+        cube([pocket_w + (w * 2) + (t * 2), w + (t * 2), usb_case_bottom_lip_depth + (t * 2)]);
+    }
+
+    // Both runs cross port bores, so what survives on -x is the material between the side
+    // ports and on +y the material either side of the far one.
+    //
+    // The clearance shrinks as t grows: at t = 0 the lip segments stop tolerance short of the
+    // bore walls, at t = tolerance the groove segments reach them. Subtracting the same bore
+    // for both would butt the segment ends together in y with nothing between them.
+    translate(pcb_pos) usb_ports((tolerance * 2) - t);
+  }
 }
 
 module usb_case_threaded_insert_holes() {
@@ -409,6 +432,9 @@ module usb_case_top() {
     }
 
     usb_case_cable_hole();
+
+    // Groove for usb_case_bottom_lip(). Same module the bottom half adds, grown by tolerance.
+    usb_case_bottom_lip(tolerance);
   }
 }
 
@@ -426,4 +452,5 @@ module usb_case() {
 echo("Case width: ", usb_case_width + (usb_case_wall_depth * 2));
 
 if (render_cutout)
+  translate([100, 0, 0]) %usb_case_cutout(tolerance);
   translate([100, 0, 0]) %usb_case_cutout(tolerance);
