@@ -18,6 +18,7 @@ cutaway_keep_above = true;
 render_top = true;
 render_bottom = true;
 render_pcb = true;
+render_cutout = true;
 
 /* [Dimensions] */
 
@@ -416,4 +417,5 @@ module usb_case() {
 
 echo("Case width: ", usb_case_width + (usb_case_wall_depth * 2));
 
-translate([100, 0, 0]) %usb_case_cutout(tolerance);
+if (render_cutout)
+  translate([100, 0, 0]) %usb_case_cutout(tolerance);
