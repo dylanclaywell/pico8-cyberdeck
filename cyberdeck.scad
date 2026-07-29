@@ -27,19 +27,29 @@ render_usb_hub = true;
 
 chamfer_size = [10, 10, 300];
 
-chamfer_transforms = [
+// Corner chamfer cut transforms for a w x h rectangle: position + rotation
+// for each of the 4 corners, meant to be subtracted with chamfer_size.
+function corner_chamfer_transforms(w, h) = [
   [[0, 0, 0], 45],
-  [[0, exterior_height, 0], 45],
-  [[exterior_width, exterior_height, 0], 45],
-  [[exterior_width, 0, 0], 45],
+  [[0, h, 0], 45],
+  [[w, h, 0], 45],
+  [[w, 0, 0], 45],
 ];
 
-interior_chamfer_transforms = [
-  [[0, 0, 0], 45],
-  [[0, interior_height, 0], 45],
-  [[interior_width, interior_height, 0], 45],
-  [[interior_width, 0, 0], 45],
-];
+chamfer_transforms = corner_chamfer_transforms(exterior_width, exterior_height);
+interior_chamfer_transforms = corner_chamfer_transforms(interior_width, interior_height);
+
+// Subtracts corner chamfers from children at each of `transforms`' positions.
+// Children should be the chamfer cut shape (e.g. square/cube(chamfer_size * 2, center=true)).
+module corner_chamfers(transforms) {
+  for (i = transforms) {
+    pos = i[0];
+    rot = i[1];
+    translate(pos)
+      rotate(rot)
+        children();
+  }
+}
 
 screw_mount_positions = [
   [case_screw_mount_spacing, case_screw_mount_spacing, 0],
@@ -62,13 +72,7 @@ module interior_cutout_translate() {
 module case_footprint() {
   difference() {
     square([exterior_width, exterior_height]);
-    for (i = chamfer_transforms) {
-      pos = i[0];
-      rot = i[1];
-      translate(pos)
-        rotate(rot)
-          square(chamfer_size * 2, center=true);
-    }
+    corner_chamfers(chamfer_transforms) square(chamfer_size * 2, center=true);
   }
 }
 
@@ -173,13 +177,7 @@ module case_cutouts() {
     // This is the interior volume of the case
     difference() {
       cube([interior_width, interior_height, interior_depth]);
-      for (i = interior_chamfer_transforms) {
-        pos = i[0];
-        rot = i[1];
-        translate(pos)
-          rotate(rot)
-            cube(chamfer_size * 2, center=true);
-      }
+      corner_chamfers(interior_chamfer_transforms) cube(chamfer_size * 2, center=true);
     }
   }
 }
@@ -214,13 +212,7 @@ module case_bottom_lip_profile(tol = 0) {
           interior_height - (tol * 2),
         ]
       );
-      for (i = interior_chamfer_transforms) {
-        pos = i[0];
-        rot = i[1];
-        translate(pos)
-          rotate(rot)
-            square(chamfer_size * 2, center=true);
-      }
+      corner_chamfers(interior_chamfer_transforms) square(chamfer_size * 2, center=true);
     }
 }
 
