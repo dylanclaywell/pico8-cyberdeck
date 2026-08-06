@@ -1,6 +1,6 @@
 # %% imports and shared params — rarely re-run
-%load_ext autoreload
-%autoreload 2
+# %load_ext autoreload
+# %autoreload 2
 
 import cadquery as cq
 from ocp_vscode import set_defaults, show
